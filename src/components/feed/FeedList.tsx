@@ -16,7 +16,7 @@ const FeedList: React.FC<FeedListProps> = ({ items }) => {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+  <div className="grid gap-6 sm:auto-rows-[minmax(220px,auto)] sm:grid-cols-2 xl:auto-rows-[minmax(260px,auto)] xl:grid-cols-3">
       {items.map((photo) => (
         <FeedItem key={photo.id} photo={photo} />
       ))}

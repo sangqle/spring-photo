@@ -8,16 +8,22 @@ interface FeedItemProps {
 }
 
 const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
-  const rawCreatedAt = photo.createdAt ? new Date(photo.createdAt) : new Date();
-  const createdAt = Number.isNaN(rawCreatedAt.getTime()) ? new Date() : rawCreatedAt;
-  const photographerName = photo.userId ?? 'Unknown photographer';
+  const rawCreatedAt = photo.createdAt ?? photo.uploadedAt;
+  const createdAtCandidate = rawCreatedAt ? new Date(rawCreatedAt) : new Date();
+  const createdAt = Number.isNaN(createdAtCandidate.getTime()) ? new Date() : createdAtCandidate;
+  const photographerName = photo.username ?? photo.userId ?? 'Unknown photographer';
 
   const imageSrc = photo.url?.trim();
   const hasImage = Boolean(imageSrc);
 
+  const width = photo.metadata?.width ?? null;
+  const height = photo.metadata?.height ?? null;
+  const rawAspectRatio = width && height ? width / height : photo.metadata?.aspectRatio ?? null;
+  const aspectRatio = rawAspectRatio && Number.isFinite(rawAspectRatio) && rawAspectRatio > 0 ? rawAspectRatio : null;
+
   return (
-    <article className="overflow-hidden rounded-2xl border border-gray-800 bg-card">
-      <div className="relative aspect-4/3 w-full bg-card-darker">
+    <article className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-800 bg-card">
+      <div className="relative w-full flex-1 bg-card-darker" style={aspectRatio ? ({ aspectRatio } as React.CSSProperties) : undefined}>
         {hasImage ? (
           <Image
             src={imageSrc as string}
