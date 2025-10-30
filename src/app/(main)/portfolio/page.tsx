@@ -6,10 +6,17 @@ import PortfolioHeader from '../../../components/portfolio/PortfolioHeader';
 import usePhotos from '../../../hooks/usePhotos';
 
 const PortfolioPage = () => {
-  const { photos, loading, error } = usePhotos();
+  const {
+    photos,
+    loading,
+    error,
+    loadMore,
+    hasMore,
+    loadingMore,
+  } = usePhotos({ pageSize: 20 });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 sm:px-6 lg:px-10">
       <PortfolioHeader />
 
       {loading ? (
@@ -21,7 +28,12 @@ const PortfolioPage = () => {
           {error}
         </div>
       ) : (
-        <PortfolioGallery photos={photos} />
+        <PortfolioGallery
+          photos={photos}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          loadingMore={loadingMore}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { API_BASE_URL } from '@/lib/config';
 import { auth } from '@/auth';
 
@@ -6,7 +6,7 @@ type SessionUser = {
   accessToken?: string;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await auth();
   const accessToken = (session?.user as SessionUser | undefined)?.accessToken;
 
@@ -15,7 +15,11 @@ export async function GET() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/photos/my-photos`, {
+    const searchParams = request.nextUrl.searchParams;
+    const queryString = searchParams.toString();
+    const upstreamUrl = `${API_BASE_URL}/api/photos/my-photos${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(upstreamUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

@@ -33,7 +33,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, width, height, showOverlay
 
   return (
     <article
-  className={`group relative overflow-hidden rounded-2xl border border-gray-800 bg-card shadow-sm transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg ${width && height ? 'shrink-0' : 'w-full'}`}
+      className={`group relative overflow-hidden bg-card shadow-sm transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg ${width && height ? 'shrink-0' : 'w-full'}`}
       style={inlineStyle}
     >
       <div className="relative h-full w-full bg-card-darker">
