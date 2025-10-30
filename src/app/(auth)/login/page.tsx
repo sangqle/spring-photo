@@ -8,7 +8,7 @@ import type { FormEvent } from 'react';
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,12 +20,17 @@ const LoginPage: React.FC = () => {
 
     const result = await signIn('credentials', {
       redirect: false,
-      email,
+      usernameOrEmail: identifier,
       password,
     });
 
     if (result?.error) {
-      setError(result.error);
+      const message =
+        result.error === 'CredentialsSignin'
+          ? 'Invalid username/email or password. Please try again.'
+          : result.error;
+
+      setError(message);
       setIsSubmitting(false);
       return;
     }
@@ -51,17 +56,17 @@ const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              Email
+            <label htmlFor="identifier" className="block text-sm font-medium text-gray-300">
+              Email or username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              id="identifier"
+              type="text"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
               required
               className="w-full rounded-lg border border-gray-700 bg-card-darker px-4 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              placeholder="you@example.com"
+              placeholder="you@example.com or yourusername"
             />
           </div>
 

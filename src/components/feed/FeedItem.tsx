@@ -8,7 +8,8 @@ interface FeedItemProps {
 }
 
 const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
-  const createdAt = photo.createdAt ? new Date(photo.createdAt) : new Date();
+  const rawCreatedAt = photo.createdAt ? new Date(photo.createdAt) : new Date();
+  const createdAt = Number.isNaN(rawCreatedAt.getTime()) ? new Date() : rawCreatedAt;
   const photographerName = photo.userId ?? 'Unknown photographer';
 
   const imageSrc = photo.url?.trim();
@@ -19,7 +20,7 @@ const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
       <div className="relative aspect-4/3 w-full bg-card-darker">
         {hasImage ? (
           <Image
-            src={imageSrc}
+            src={imageSrc as string}
             alt={photo.description ?? photo.title ?? 'Photo'}
             fill
             className="object-cover"

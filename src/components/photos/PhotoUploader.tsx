@@ -149,12 +149,30 @@ const PhotoUploader: React.FC<PhotoUploaderProps> = ({ onUploadComplete }) => {
         body: formData,
       });
 
+      const contentType = response.headers.get('content-type') ?? '';
+      const isJson = contentType.includes('application/json');
+      const payload = isJson ? await response.json() : await response.text();
+
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const message =
+          isJson && payload && typeof payload === 'object' && 'error' in payload
+            ? (payload as { error?: string; message?: string }).error ?? (payload as { message?: string }).message
+            : typeof payload === 'string'
+                ? payload
+                : 'Upload failed';
+        throw new Error(message);
       }
 
       setDrafts([]);
-      onUploadComplete?.(`Uploaded ${count} photo${count > 1 ? 's' : ''} successfully!`);
+
+      const successMessage =
+        isJson && payload && typeof payload === 'object' && 'message' in payload
+          ? (payload as { message?: string }).message
+          : undefined;
+
+      onUploadComplete?.(
+        successMessage ?? `Uploaded ${count} photo${count > 1 ? 's' : ''} successfully!`,
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Upload failed';
       setError(message);

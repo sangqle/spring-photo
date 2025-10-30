@@ -1,11 +1,11 @@
 export interface Photo {
   id: string;
-  userId: string;
-  title: string;
+  userId?: string;
+  title?: string;
   description?: string;
-  url: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  url?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PhotoMetadata {

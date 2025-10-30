@@ -1,9 +1,9 @@
 import React from 'react';
 import PhotoCard from '../photos/PhotoCard';
-import { PortfolioItem } from '../../types/portfolio';
+import { Photo } from '../../types/photo';
 
 interface PortfolioGalleryProps {
-  photos: PortfolioItem[];
+  photos: Photo[];
 }
 
 const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({ photos = [] }) => {

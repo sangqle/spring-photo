@@ -17,7 +17,7 @@ export async function GET() {
           ? (payload as { error?: string; message?: string }).error ?? (payload as { message?: string }).message
           : typeof payload === 'string'
               ? payload
-              : 'Unable to load photos';
+              : 'Unable to load public photos';
 
       return NextResponse.json({ error: errorMessage }, { status: response.status });
     }
@@ -25,12 +25,8 @@ export async function GET() {
     return NextResponse.json(payload, { status: response.status });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to load photos' },
+      { error: error instanceof Error ? error.message : 'Unable to load public photos' },
       { status: 500 },
     );
   }
-}
-
-export async function POST() {
-  return NextResponse.json({ error: 'Direct photo creation is not supported.' }, { status: 405 });
 }

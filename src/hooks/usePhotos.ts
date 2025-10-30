@@ -9,10 +9,28 @@ const usePhotos = () => {
 
   const fetchPhotos = async () => {
     try {
-      const response = await axios.get('/api/photos');
-      setPhotos(response.data);
+      const response = await axios.get('/api/photos/my-photos');
+      const data = response.data;
+
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.content)
+            ? data.content
+            : null;
+
+      if (Array.isArray(items)) {
+        setPhotos(items);
+        setError(null);
+      } else if (data?.error) {
+        setError(typeof data.error === 'string' ? data.error : 'Failed to fetch photos');
+      } else {
+        setPhotos([]);
+      }
     } catch (err) {
-      setError('Failed to fetch photos');
+      const message = err instanceof Error ? err.message : 'Failed to fetch photos';
+      setError(message);
     } finally {
       setLoading(false);
     }

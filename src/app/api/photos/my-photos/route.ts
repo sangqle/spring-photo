@@ -1,9 +1,24 @@
 import { NextResponse } from 'next/server';
 import { API_BASE_URL } from '@/lib/config';
+import { auth } from '@/auth';
+
+type SessionUser = {
+  accessToken?: string;
+};
 
 export async function GET() {
+  const session = await auth();
+  const accessToken = (session?.user as SessionUser | undefined)?.accessToken;
+
+  if (!accessToken) {
+    return NextResponse.json({ error: 'You must be signed in to view your photos.' }, { status: 401 });
+  }
+
   try {
-    const response = await fetch(`${API_BASE_URL}/api/photos/public`, {
+    const response = await fetch(`${API_BASE_URL}/api/photos/my-photos`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       cache: 'no-store',
     });
 
@@ -17,7 +32,7 @@ export async function GET() {
           ? (payload as { error?: string; message?: string }).error ?? (payload as { message?: string }).message
           : typeof payload === 'string'
               ? payload
-              : 'Unable to load photos';
+              : 'Unable to load your photos';
 
       return NextResponse.json({ error: errorMessage }, { status: response.status });
     }
@@ -25,12 +40,8 @@ export async function GET() {
     return NextResponse.json(payload, { status: response.status });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to load photos' },
+      { error: error instanceof Error ? error.message : 'Unable to load your photos' },
       { status: 500 },
     );
   }
-}
-
-export async function POST() {
-  return NextResponse.json({ error: 'Direct photo creation is not supported.' }, { status: 405 });
 }

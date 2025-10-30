@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import './globals.css';
+import Providers from './providers';
 
 export const metadata = {
   title: 'PhotoShare - Share Your Photography Portfolio',
@@ -15,12 +16,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-[#0a0a0a] text-white">
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="grow">{children}</main>
-          <Footer />
-        </div>
+  <body className="bg-background text-white">
+        <Providers>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="grow">{children}</main>
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );
