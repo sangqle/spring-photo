@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -28,7 +28,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
   const description = photo.description?.trim();
   const photographer = photo.username?.trim() || photo.userId?.trim();
   const metadata = photo.metadata ?? {};
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomMode, setZoomMode] = useState<'default' | 'fit' | 'original'>('default');
   const [isDragging, setIsDragging] = useState(false);
   const [imageNaturalSize, setImageNaturalSize] = useState<{ width: number; height: number } | null>(null);
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
@@ -43,6 +43,8 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
   });
   const containerSizeRef = useRef({ width: 0, height: 0 });
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const isZoomed = zoomMode !== 'default';
+  const isPanEnabled = zoomMode === 'original';
 
   const createdAt = photo.createdAt ?? photo.uploadedAt ?? metadata.dateTaken ?? undefined;
   const createdAtDisplay = formatDate(createdAt);
@@ -108,42 +110,39 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
     if (!imageSrc) {
       return;
     }
-    setIsZoomed((value) => {
-      if (value) {
+    setZoomMode((mode) => {
+      const nextMode = mode === 'default' ? 'fit' : mode === 'fit' ? 'original' : 'default';
+
+      if (mode === 'original') {
         stopDragging();
-        setPanOffset({ x: 0, y: 0 });
-        dragState.current = {
-          active: false,
-          pointerId: -1,
-          startX: 0,
-          startY: 0,
-          startOffsetX: 0,
-          startOffsetY: 0,
-        };
       }
-      return !value;
+
+      setIsDragging(false);
+      setPanOffset({ x: 0, y: 0 });
+
+      return nextMode;
     });
   }, [imageSrc, stopDragging]);
 
   useEffect(() => {
-    if (!isOpen && isZoomed) {
-      setIsZoomed(false);
+    if (!isOpen && zoomMode !== 'default') {
+      setZoomMode('default');
       stopDragging();
-      setPanOffset({ x: 0, y: 0 });
-      dragState.current = {
-        active: false,
-        pointerId: -1,
-        startX: 0,
-        startY: 0,
-        startOffsetX: 0,
-        startOffsetY: 0,
-      };
     }
-  }, [isOpen, isZoomed, stopDragging]);
+  }, [isOpen, zoomMode, stopDragging]);
 
   useEffect(() => {
     setImageNaturalSize(null);
     setPanOffset({ x: 0, y: 0 });
+    setZoomMode('default');
+    dragState.current = {
+      active: false,
+      pointerId: -1,
+      startX: 0,
+      startY: 0,
+      startOffsetX: 0,
+      startOffsetY: 0,
+    };
   }, [imageSrc]);
 
   useEffect(() => {
@@ -260,6 +259,31 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
     [getPanBounds],
   );
 
+  const handleWheel = useCallback(
+    (event: React.WheelEvent<HTMLDivElement>) => {
+      if (!isZoomed) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const { minX, maxX, minY, maxY } = getPanBounds();
+      const deltaX = event.deltaX;
+      const deltaY = event.deltaY;
+
+      setPanOffset((current) => {
+        const nextX = clamp(current.x - deltaX, minX, maxX);
+        const nextY = clamp(current.y - deltaY, minY, maxY);
+        if (nextX === current.x && nextY === current.y) {
+          return current;
+        }
+        return { x: nextX, y: nextY };
+      });
+    },
+    [getPanBounds, isZoomed],
+  );
+
   const endDragging = useCallback(() => {
     if (!dragState.current.active) {
       return;
@@ -275,7 +299,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
     }
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isZoomed) {
       return;
     }
@@ -326,21 +350,21 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
 
   const zoomWrapperStyle: CSSProperties = resolvedImageSize
     ? {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: `${resolvedImageSize.width}px`,
-        height: `${resolvedImageSize.height}px`,
-        transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
-        willChange: 'transform',
-      }
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: `${resolvedImageSize.width}px`,
+      height: `${resolvedImageSize.height}px`,
+      transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
+      willChange: 'transform',
+    }
     : {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
-        willChange: 'transform',
-      };
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
+      willChange: 'transform',
+    };
 
   const zoomedImageStyle: CSSProperties = resolvedImageSize
     ? { display: 'block', width: '100%', height: '100%' }
@@ -358,15 +382,14 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
         className={`relative z-10 flex h-full w-full flex-col overflow-hidden rounded-3xl bg-card-darker shadow-2xl ${modalContainerClasses}`}
       >
         <div
-          className={`relative flex-1 bg-black ${
-            imageSrc
+          className={`relative flex-1 bg-black ${imageSrc
               ? isZoomed
                 ? isDragging
                   ? 'cursor-grabbing'
                   : 'cursor-grab'
                 : 'cursor-zoom-in'
               : ''
-          }`}
+            }`}
           onDoubleClick={toggleZoom}
         >
           {imageSrc ? (
@@ -379,10 +402,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
                 onPointerUp={endDragging}
                 onPointerLeave={endDragging}
                 onPointerCancel={endDragging}
-                onWheel={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
+                onWheel={handleWheel}
                 style={{ touchAction: 'none', overscrollBehavior: 'none' }}
               >
                 <div className="absolute top-0 left-0 will-change-transform" style={zoomWrapperStyle}>
