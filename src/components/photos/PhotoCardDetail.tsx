@@ -351,8 +351,17 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
     : 'max-h-[calc(100vh-3rem)] max-w-[min(1200px,96vw)] md:flex-row';
 
   const infoPanelDisplayClass = isZoomed ? 'hidden md:hidden' : 'flex';
-  const zoomHint = isZoomed ? 'Double-click to exit zoom' : 'Double-click to view original size';
-  const zoomMessage = isZoomed ? `Drag to explore - ${zoomHint}` : zoomHint;
+  const zoomHint = zoomMode === 'original'
+    ? 'Double-click to exit zoom'
+    : zoomMode === 'fit'
+      ? 'Double-click to view original size'
+      : 'Double-click to zoom in';
+
+  const zoomMessage = zoomMode === 'original'
+    ? `Zoom level 2 • Drag to explore • ${zoomHint}`
+    : zoomMode === 'fit'
+      ? `Zoom level 1 • ${zoomHint}`
+      : zoomHint;
 
   const zoomWrapperStyle: CSSProperties = resolvedImageSize
     ? {
