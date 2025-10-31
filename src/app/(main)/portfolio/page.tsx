@@ -16,9 +16,8 @@ const PortfolioPage = () => {
   } = usePhotos({ pageSize: 20 });
 
   return (
-    <div className="space-y-8 px-8 sm:px-12 lg:px-20">
+  <div className="space-y-8 pb-8 sm:px-12 sm:pb-20 lg:px-16 lg:pb-16">
       <PortfolioHeader />
-
       {loading ? (
         <div className="rounded-2xl border border-gray-800 bg-card p-10 text-center text-gray-300">
           Loading your photos...

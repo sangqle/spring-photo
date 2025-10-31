@@ -10,7 +10,7 @@ const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({ userName, userBio }) 
     const bio = userBio ?? 'Showcase the shots you are most proud of and build your story.';
 
     return (
-        <header className="space-y-3 text-center">
+        <header className="space-y-3 py-12 text-center">
             <h1 className="text-4xl font-bold text-white">{title}</h1>
             <p className="text-base text-gray-400">{bio}</p>
         </header>
