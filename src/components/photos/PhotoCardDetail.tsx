@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { X } from 'lucide-react';
+import { Minimize2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { Photo } from '../../types/photo';
 
@@ -123,6 +123,12 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
       return nextMode;
     });
   }, [imageSrc, stopDragging]);
+
+  const exitZoom = useCallback(() => {
+    setZoomMode('default');
+    setPanOffset({ x: 0, y: 0 });
+    stopDragging();
+  }, [stopDragging]);
 
   useEffect(() => {
     if (!isOpen && zoomMode !== 'default') {
@@ -392,6 +398,16 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
             }`}
           onDoubleClick={toggleZoom}
         >
+          {isZoomed ? (
+            <button
+              type="button"
+              onClick={exitZoom}
+              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-100 transition hover:bg-black/80"
+              aria-label="Exit zoom mode"
+            >
+              <Minimize2 className="h-5 w-5" />
+            </button>
+          ) : null}
           {imageSrc ? (
             isZoomed ? (
               <div
