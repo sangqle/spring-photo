@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Photo } from '../../types/photo';
 
@@ -21,19 +21,43 @@ const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
   const rawAspectRatio = width && height ? width / height : photo.metadata?.aspectRatio ?? null;
   const aspectRatio = rawAspectRatio && Number.isFinite(rawAspectRatio) && rawAspectRatio > 0 ? rawAspectRatio : null;
 
+  const displayTitle = photo.title?.trim() || 'Untitled photo';
+  const displayDescription = photo.description?.trim();
+  const imageWrapperStyle: CSSProperties = aspectRatio
+    ? { aspectRatio: aspectRatio.toString() }
+    : { aspectRatio: '4 / 3' };
+
   return (
-    <article className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-800 bg-card">
-      <div className="relative w-full flex-1 bg-card-darker" style={aspectRatio ? ({ aspectRatio } as React.CSSProperties) : undefined}>
+    <article className="w-full overflow-hidden rounded-3xl border border-gray-800 bg-card shadow-xl shadow-black/20">
+      <header className="flex items-start justify-between gap-4 px-6 pt-6">
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-white">{photographerName}</span>
+          <time className="text-xs text-gray-500" dateTime={createdAt.toISOString()}>
+            {formatDistanceToNow(createdAt, { addSuffix: true })}
+          </time>
+        </div>
+      </header>
+
+      <div className="space-y-3 px-6 pt-4">
+        <h3 className="text-xl font-semibold tracking-tight text-white">{displayTitle}</h3>
+        {displayDescription ? (
+          <p className="text-base leading-relaxed text-gray-200">
+            {displayDescription}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="relative mt-5 w-full overflow-hidden bg-black" style={imageWrapperStyle}>
         {hasImage ? (
           <Image
             src={imageSrc as string}
-            alt={photo.description ?? photo.title ?? 'Photo'}
+            alt={displayDescription ?? displayTitle}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 60vw"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-card-darker">
+          <div className="absolute inset-0 flex items-center justify-center bg-card">
             <span className="rounded-full border border-gray-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-400">
               No Image
             </span>
@@ -41,24 +65,9 @@ const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
         )}
       </div>
 
-      <div className="space-y-2 p-4">
-        <div className="flex items-center justify-between text-sm text-gray-400">
-          <span>{photographerName}</span>
-          <time dateTime={createdAt.toISOString()}>
-            {formatDistanceToNow(createdAt, { addSuffix: true })}
-          </time>
-        </div>
-
-        <h3 className="text-lg font-semibold text-white">
-          {photo.title ?? 'Untitled photo'}
-        </h3>
-
-        {photo.description ? (
-          <p className="text-sm text-gray-300">
-            {photo.description}
-          </p>
-        ) : null}
-      </div>
+      <footer className="px-6 pb-6 pt-4 text-sm text-gray-500">
+        <span>{photo.metadata?.cameraModel ?? photo.metadata?.cameraMake ?? 'Shared photo'}</span>
+      </footer>
     </article>
   );
 };
