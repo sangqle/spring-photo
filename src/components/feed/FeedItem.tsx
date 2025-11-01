@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { type CSSProperties, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import FeedItemActions from './FeedItemActions';
 import { Photo } from '../../types/photo';
 
 interface FeedItemProps {
@@ -10,6 +11,7 @@ interface FeedItemProps {
 
 const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   
   const rawCreatedAt = photo.createdAt ?? photo.uploadedAt;
   const createdAtCandidate = rawCreatedAt ? new Date(rawCreatedAt) : new Date();
@@ -31,6 +33,10 @@ const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
   const imageWrapperStyle: CSSProperties = aspectRatio
     ? { aspectRatio: aspectRatio.toString() }
     : { aspectRatio: '4 / 3' };
+
+  const handleToggleComments = () => {
+    setShowComments((current) => !current);
+  };
 
   return (
     <article className="w-full overflow-hidden rounded-3xl border border-gray-800 bg-card shadow-xl shadow-black/20">
@@ -108,9 +114,37 @@ const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
         )}
       </div>
 
-      <footer className="px-6 pb-6 pt-4 text-sm text-gray-500">
-        <span>{photo.metadata?.cameraModel ?? photo.metadata?.cameraMake ?? 'Shared photo'}</span>
-      </footer>
+      <FeedItemActions
+        photoId={photo.id}
+        initialIsLiked={photo.isLiked}
+        initialLikeCount={photo.likeCount ?? photo.likesCount}
+        commentCount={photo.commentCount ?? photo.commentsCount ?? 0}
+        viewCount={photo.viewCount ?? 0}
+        showComments={showComments}
+        onToggleComments={handleToggleComments}
+      />
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="border-b border-gray-800 px-6 py-4">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-400">
+              Comments coming soon...
+            </div>
+            {/* TODO: Add comment list and input */}
+            {/* <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="Add a comment..."
+                className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-gray-600 focus:outline-none"
+              />
+              <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                Post
+              </button>
+            </div> */}
+          </div>
+        </div>
+      )}
     </article>
   );
 };

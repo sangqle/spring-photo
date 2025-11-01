@@ -15,6 +15,12 @@ export interface Photo {
   uploadedAt?: string;
   metadata?: PhotoMetadata;
   processingStatus?: string;
+  likeCount?: number;
+  commentCount?: number;
+  viewCount?: number;
+  likesCount?: number;
+  commentsCount?: number;
+  isLiked?: boolean;
 }
 
 export interface PhotoMetadata {
