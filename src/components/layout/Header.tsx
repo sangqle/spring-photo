@@ -14,23 +14,17 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  {
+    href: '/feed',
+    label: 'Explore',
+    icon: Compass,
+    variant: 'neutral',
+  },
     {
         href: '/portfolio',
         label: 'You',
         icon: User,
         variant: 'neutral',
-    },
-    {
-        href: '/feed',
-        label: 'Explore',
-        icon: Compass,
-        variant: 'neutral',
-    },
-    {
-        href: '/upload',
-        label: 'Upload',
-        icon: Upload,
-      variant: 'neutral',
     },
 ];
 
@@ -126,7 +120,7 @@ const Header: React.FC = () => {
         <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-gray-800 bg-card-darker/95 shadow-lg shadow-black/10 backdrop-blur">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 w-full items-center gap-4">
-                    <div className="flex flex-1 items-center gap-4">
+                    <div className="flex min-w-0 flex-1 items-center gap-6">
                         <Link
                             href="/"
                             className="flex items-center gap-2 text-white transition-colors hover:text-blue-400"
@@ -137,50 +131,63 @@ const Header: React.FC = () => {
                             <span className="hidden text-xl font-semibold sm:block">PhotoShare</span>
                         </Link>
 
-                        <div className="hidden flex-1 md:flex">
-                            <SearchBar placeholder="Search photos, people, or collections" className="w-full" />
-                        </div>
+                        <nav className="hidden items-center gap-0.5 md:flex">
+                            {navItems.map(({ href, label, icon: Icon, variant }) => {
+                                const isActive = pathname?.startsWith(href);
+                                const baseStyles =
+                                    "group relative flex h-12 items-center rounded-2xl px-2 transition-colors after:pointer-events-none after:absolute after:left-4 after:right-4 after:-bottom-1 after:h-0.5 after:rounded-full after:content-[''] after:transition-opacity";
+                                const activeStyles = 'text-white';
+                                const inactiveStyles =
+                                    variant === 'primary'
+                                        ? 'text-blue-200 hover:text-white'
+                                        : 'text-gray-200 hover:text-white';
+                                const iconActiveStyles = variant === 'primary' ? 'text-blue-200' : 'text-white';
+                                const iconInactiveStyles = variant === 'primary' ? 'text-blue-200/80' : 'text-gray-300';
+                                const highlightActive =
+                                    variant === 'primary'
+                                        ? 'after:bg-blue-400 after:opacity-100'
+                                        : 'after:bg-white/80 after:opacity-100';
+                                const highlightInactive =
+                                    variant === 'primary'
+                                        ? 'after:bg-blue-400 after:opacity-0 hover:after:opacity-70'
+                                        : 'after:bg-white/60 after:opacity-0 hover:after:opacity-60';
+
+                                return (
+                                    <Link
+                                        key={href}
+                                        href={href}
+                                        aria-current={isActive ? 'page' : undefined}
+                                        className={`${baseStyles} ${isActive ? `${activeStyles} ${highlightActive}` : `${inactiveStyles} ${highlightInactive}`}`}
+                                    >
+                                        <span
+                                            className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                                                isActive ? iconActiveStyles : iconInactiveStyles
+                                            }`}
+                                        >
+                                            <Icon className="h-5 w-5" />
+                                        </span>
+                                        <span className="text-sm font-semibold leading-tight text-left">{label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
                     </div>
 
-                    <nav className="hidden items-center gap-0.5 md:flex">
-                        {navItems.map(({ href, label, icon: Icon, variant }) => {
-                            const isActive = pathname?.startsWith(href);
-                            const baseStyles =
-                                "group relative flex h-12 items-center rounded-2xl px-2 transition-colors after:pointer-events-none after:absolute after:left-4 after:right-4 after:-bottom-1 after:h-0.5 after:rounded-full after:content-[''] after:transition-opacity";
-                            const activeStyles = 'text-white';
-                            const inactiveStyles =
-                                variant === 'primary'
-                                    ? 'text-blue-200 hover:text-white'
-                                    : 'text-gray-200 hover:text-white';
-                            const iconActiveStyles = variant === 'primary' ? 'text-blue-200' : 'text-white';
-                            const iconInactiveStyles = variant === 'primary' ? 'text-blue-200/80' : 'text-gray-300';
-                            const highlightActive =
-                                variant === 'primary'
-                                    ? 'after:bg-blue-400 after:opacity-100'
-                                    : 'after:bg-white/80 after:opacity-100';
-                            const highlightInactive =
-                                variant === 'primary'
-                                    ? 'after:bg-blue-400 after:opacity-0 hover:after:opacity-70'
-                                    : 'after:bg-white/60 after:opacity-0 hover:after:opacity-60';
+                    <div className="hidden min-w-0 items-center justify-end gap-3 md:flex md:flex-1">
+                        <SearchBar
+                            placeholder="Search photos, people, or collections"
+                            className="w-[18rem] lg:w-[24rem]"
+                        />
 
-                            return (
-                                <Link
-                                    key={href}
-                                    href={href}
-                                    aria-current={isActive ? 'page' : undefined}
-                                    className={`${baseStyles} ${isActive ? `${activeStyles} ${highlightActive}` : `${inactiveStyles} ${highlightInactive}`}`}
-                                >
-                                    <span
-                                        className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
-                                            isActive ? iconActiveStyles : iconInactiveStyles
-                                        }`}
-                                    >
-                                        <Icon className="h-5 w-5" />
-                                    </span>
-                                    <span className="text-sm font-semibold leading-tight text-left">{label}</span>
-                                </Link>
-                            );
-                        })}
+                        <Link
+                            href="/upload"
+                            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-blue-500/20 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30 hover:text-white"
+                        >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-200">
+                                <Upload className="h-4 w-4" />
+                            </span>
+                            Upload
+                        </Link>
 
                         {session ? (
                             <div ref={userMenuRef} className="relative">
@@ -246,7 +253,7 @@ const Header: React.FC = () => {
                                 <span className="text-sm font-semibold leading-tight text-left">Sign in</span>
                             </Link>
                         )}
-                    </nav>
+                    </div>
 
                     <button
                         type="button"
@@ -362,6 +369,16 @@ const Header: React.FC = () => {
                                     </Link>
                                 );
                             })}
+                            <Link
+                                href="/upload"
+                                onClick={closeMobileMenu}
+                                className="relative flex h-12 items-center gap-2 rounded-2xl border border-blue-500/40 px-4 text-sm font-semibold text-blue-100 transition hover:border-blue-500/60 hover:bg-blue-500/10 hover:text-white"
+                            >
+                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-200">
+                                    <Upload className="h-5 w-5" />
+                                </span>
+                                Upload
+                            </Link>
                         </nav>
                     </div>
                 ) : null}
