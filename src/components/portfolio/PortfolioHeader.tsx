@@ -138,15 +138,6 @@ const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
                 <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row">
                     <button
                         type="button"
-                        onClick={handleShare}
-                        disabled={isSharing}
-                        className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-blue-500/20 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        <Share2 className="h-4 w-4" />
-                        {isSharing ? 'Sharing…' : 'Share'}
-                    </button>
-                    <button
-                        type="button"
                         onClick={handleCopyLink}
                         className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 text-sm font-semibold text-gray-200 transition hover:border-white/30 hover:bg-white/10"
                     >

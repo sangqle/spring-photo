@@ -52,7 +52,7 @@ const PortfolioClient: React.FC<PortfolioClientProps> = ({ username, owner, isOw
         displayName={displayName}
         username={owner.username ?? username}
         bio={bio}
-  avatarUrl={avatarUrl}
+        avatarUrl={avatarUrl}
         shareUrl={shareUrl}
         isOwner={isOwner}
       />

@@ -25,8 +25,6 @@ async function fetchOwner(baseUrl: string, username: string): Promise<PortfolioO
     },
   });
 
-  console.log('fetchOwner response status:', response);
-
   if (response.status === 404) {
     return null;
   }
@@ -67,7 +65,11 @@ const sanitizeUsername = (rawUsername: string | undefined): string | null => {
     decoded = rawUsername;
   }
 
-  const trimmed = decoded.trim();
+  // Remove @ prefix if present
+  let trimmed = decoded.trim();
+  if (trimmed.startsWith('@')) {
+    trimmed = trimmed.slice(1);
+  }
 
   if (!trimmed) {
     return null;
@@ -85,7 +87,6 @@ const UserPortfolioPage = async ({ params }: PageProps) => {
   const resolvedParams = await params;
   
   // Get user name from url params
-  console.log('params:', resolvedParams);
   const requestedUsername = sanitizeUsername(resolvedParams?.username);
 
   if (!requestedUsername) {
