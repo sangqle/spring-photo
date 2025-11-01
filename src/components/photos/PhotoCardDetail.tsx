@@ -460,6 +460,29 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
     };
   })();
 
+  const zoomHintStyle: CSSProperties = (() => {
+    if (!imageSrc) {
+      return {};
+    }
+
+    const containerWidth = containerSize.width;
+    const containerHeight = containerSize.height;
+    const imageWidth = displayImageSize?.width ?? 0;
+    const imageHeight = displayImageSize?.height ?? 0;
+
+    if (!isZoomed || containerWidth === 0 || containerHeight === 0 || imageWidth === 0 || imageHeight === 0) {
+      return { bottom: '16px', right: '16px' };
+    }
+
+    const horizontalOffset = Math.max((containerWidth - imageWidth) / 2, 0) + 16;
+    const verticalOffset = Math.max((containerHeight - imageHeight) / 2, 0) + 16;
+
+    return {
+      bottom: `${verticalOffset}px`,
+      right: `${horizontalOffset}px`,
+    };
+  })();
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-6">
       <button
@@ -539,7 +562,10 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
             </div>
           )}
           {imageSrc ? (
-            <span className="pointer-events-none absolute bottom-4 right-4 hidden rounded-full bg-black/60 px-3 py-1 text-xs text-gray-200 md:block">
+            <span
+              className="pointer-events-none absolute hidden rounded-full bg-black/60 px-3 py-1 text-xs text-gray-200 md:block"
+              style={zoomHintStyle}
+            >
               {zoomMessage}
             </span>
           ) : null}
