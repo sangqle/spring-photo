@@ -245,12 +245,12 @@ const Header: React.FC = () => {
                             <Link
                                 href="/login"
                                 onClick={closeUserMenu}
-                                className="group relative flex h-12 items-center rounded-2xl px-4 text-blue-200 transition-colors after:pointer-events-none after:absolute after:left-4 after:right-4 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-blue-400 after:opacity-0 after:transition-opacity hover:text-white hover:after:opacity-70"
+                                className="group relative flex h-12 shrink-0 items-center gap-2 rounded-2xl px-4 text-blue-200 transition-colors after:pointer-events-none after:absolute after:left-4 after:right-4 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-blue-400 after:opacity-0 after:transition-opacity hover:text-white hover:after:opacity-70"
                             >
                                 <span className="flex h-9 w-9 items-center justify-center rounded-xl text-blue-200/80 transition-colors group-hover:text-blue-200">
                                     <User className="h-5 w-5" />
                                 </span>
-                                <span className="text-sm font-semibold leading-tight text-left">Sign in</span>
+                                <span className="whitespace-nowrap text-sm font-semibold leading-tight text-left">Sign in</span>
                             </Link>
                         )}
                     </div>

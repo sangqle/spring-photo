@@ -1,8 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Upload, Users, Image as ImageIcon, TrendingUp } from 'lucide-react';
+import { auth } from '@/auth';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+
+  if (session) {
+    redirect('/feed');
+  }
+
   return (
     <>
       {/* Hero Section */}
@@ -31,14 +39,14 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-[#18181b]">
+  <section className="py-20 bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             Everything You Need to Showcase Your Work
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Feature 1 */}
-            <div className="bg-[#212124] p-6 rounded-lg border border-gray-800 hover:border-blue-500 transition-colors">
+            <div className="bg-card-darker p-6 rounded-lg border border-gray-800 hover:border-blue-500 transition-colors">
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Upload className="w-6 h-6 text-blue-400" />
               </div>
@@ -49,7 +57,7 @@ export default function HomePage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-[#212124] p-6 rounded-lg border border-gray-800 hover:border-purple-500 transition-colors">
+            <div className="bg-card-darker p-6 rounded-lg border border-gray-800 hover:border-purple-500 transition-colors">
               <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
                 <ImageIcon className="w-6 h-6 text-purple-400" />
               </div>
@@ -60,7 +68,7 @@ export default function HomePage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-[#212124] p-6 rounded-lg border border-gray-800 hover:border-pink-500 transition-colors">
+            <div className="bg-card-darker p-6 rounded-lg border border-gray-800 hover:border-pink-500 transition-colors">
               <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-pink-400" />
               </div>
@@ -71,7 +79,7 @@ export default function HomePage() {
             </div>
 
             {/* Feature 4 */}
-            <div className="bg-[#212124] p-6 rounded-lg border border-gray-800 hover:border-green-500 transition-colors">
+            <div className="bg-card-darker p-6 rounded-lg border border-gray-800 hover:border-green-500 transition-colors">
               <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
                 <TrendingUp className="w-6 h-6 text-green-400" />
               </div>
@@ -85,7 +93,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#0a0a0a]">
+  <section className="py-20 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
             Ready to Share Your Vision?
