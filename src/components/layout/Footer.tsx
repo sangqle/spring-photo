@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
             <h3 className="text-white font-semibold mb-4">Explore</h3>
             <ul className="space-y-2">
               <li><Link href="/feed" className="text-gray-400 hover:text-white transition-colors text-sm">Photo Feed</Link></li>
-              <li><Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors text-sm">Portfolios</Link></li>
+              <li><Link href="/feed" className="text-gray-400 hover:text-white transition-colors text-sm">Portfolios</Link></li>
               <li><Link href="/upload" className="text-gray-400 hover:text-white transition-colors text-sm">Upload</Link></li>
             </ul>
           </div>

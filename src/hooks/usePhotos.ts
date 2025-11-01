@@ -4,11 +4,12 @@ import { Photo } from '../types/photo';
 
 interface UsePhotosOptions {
   pageSize?: number;
+  username?: string;
 }
 
 const DEFAULT_PAGE_SIZE = 20;
 
-const usePhotos = ({ pageSize = DEFAULT_PAGE_SIZE }: UsePhotosOptions = {}) => {
+const usePhotos = ({ pageSize = DEFAULT_PAGE_SIZE, username }: UsePhotosOptions = {}) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +21,10 @@ const usePhotos = ({ pageSize = DEFAULT_PAGE_SIZE }: UsePhotosOptions = {}) => {
 
   const parsedPageSize = useMemo(() => Math.max(Math.floor(pageSize) || DEFAULT_PAGE_SIZE, 1), [pageSize]);
 
+  const endpoint = username
+    ? `/api/photos/user/${encodeURIComponent(username)}`
+    : '/api/photos/my-photos';
+
   const fetchPage = useCallback(async (targetPage: number) => {
     const isFirstPage = targetPage === 0;
     if (isFirstPage) {
@@ -29,7 +34,7 @@ const usePhotos = ({ pageSize = DEFAULT_PAGE_SIZE }: UsePhotosOptions = {}) => {
     }
 
     try {
-      const response = await axios.get('/api/photos/my-photos', {
+      const response = await axios.get(endpoint, {
         params: {
           page: targetPage,
           size: parsedPageSize,
@@ -97,7 +102,7 @@ const usePhotos = ({ pageSize = DEFAULT_PAGE_SIZE }: UsePhotosOptions = {}) => {
         setLoadingMore(false);
       }
     }
-  }, [parsedPageSize]);
+  }, [endpoint, parsedPageSize]);
 
   const loadMore = useCallback(() => {
     if (loading || loadingMore || !hasMore) {
@@ -119,7 +124,15 @@ const usePhotos = ({ pageSize = DEFAULT_PAGE_SIZE }: UsePhotosOptions = {}) => {
     fetchPage(0).catch(() => {
       // errors handled inside fetchPage
     });
-  }, [fetchPage]);
+  }, [fetchPage, username]);
+
+  useEffect(() => {
+    setPhotos([]);
+    setPage(-1);
+    setHasMore(true);
+    setTotalPages(null);
+    setTotalCount(null);
+  }, [username]);
 
   return {
     photos,

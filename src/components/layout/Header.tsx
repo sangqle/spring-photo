@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
@@ -13,19 +13,13 @@ type NavItem = {
     variant: 'neutral' | 'primary';
 };
 
-const navItems: NavItem[] = [
-  {
-    href: '/feed',
-    label: 'Explore',
-    icon: Compass,
-    variant: 'neutral',
-  },
-    {
-        href: '/portfolio',
-        label: 'You',
-        icon: User,
-        variant: 'neutral',
-    },
+const baseNavItems: NavItem[] = [
+        {
+                href: '/feed',
+                label: 'Explore',
+                icon: Compass,
+                variant: 'neutral',
+        },
 ];
 
 const inputStyles =
@@ -116,6 +110,39 @@ const Header: React.FC = () => {
 
     const displayName = session?.user?.name ?? session?.user?.email ?? 'Your space';
 
+    const portfolioHandle = useMemo(() => {
+        const sessionUser = session?.user as { username?: string; handle?: string } | undefined;
+        const possibleHandle = sessionUser?.username ?? sessionUser?.handle ?? session?.user?.name ?? null;
+
+        if (!possibleHandle) {
+            return null;
+        }
+
+        const normalizedHandle = possibleHandle.toString().trim();
+        if (!normalizedHandle) {
+            return null;
+        }
+
+        return `/${encodeURIComponent(normalizedHandle)}`;
+    }, [session]);
+
+    const navItems = useMemo(() => {
+        const items: NavItem[] = [...baseNavItems];
+
+        if (portfolioHandle) {
+            items.push({
+                href: portfolioHandle,
+                label: 'You',
+                icon: User,
+                variant: 'neutral',
+            });
+        }
+
+        return items;
+    }, [portfolioHandle]);
+
+    const uploadHref = session ? '/upload' : '/login?callbackUrl=%2Fupload';
+
     return (
         <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-gray-800 bg-card-darker/95 shadow-lg shadow-black/10 backdrop-blur">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -180,7 +207,7 @@ const Header: React.FC = () => {
                         />
 
                         <Link
-                            href="/upload"
+                            href={uploadHref}
                             className="inline-flex h-11 items-center gap-2 rounded-2xl bg-blue-500/20 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30 hover:text-white"
                         >
                             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-200">
@@ -287,13 +314,15 @@ const Header: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="mt-4 grid gap-2 text-sm font-medium">
-                                    <Link
-                                        href="/portfolio"
-                                        onClick={closeMobileMenu}
-                                        className="rounded-xl border border-white/5 px-3 py-2 text-left text-gray-200 transition hover:border-white/10 hover:bg-white/10"
-                                    >
-                                        Your portfolio
-                                    </Link>
+                                    {portfolioHandle ? (
+                                        <Link
+                                            href={portfolioHandle}
+                                            onClick={closeMobileMenu}
+                                            className="rounded-xl border border-white/5 px-3 py-2 text-left text-gray-200 transition hover:border-white/10 hover:bg-white/10"
+                                        >
+                                            Your portfolio
+                                        </Link>
+                                    ) : null}
                                     <Link
                                         href="/settings"
                                         onClick={closeMobileMenu}
@@ -370,7 +399,7 @@ const Header: React.FC = () => {
                                 );
                             })}
                             <Link
-                                href="/upload"
+                                href={uploadHref}
                                 onClick={closeMobileMenu}
                                 className="relative flex h-12 items-center gap-2 rounded-2xl border border-blue-500/40 px-4 text-sm font-semibold text-blue-100 transition hover:border-blue-500/60 hover:bg-blue-500/10 hover:text-white"
                             >

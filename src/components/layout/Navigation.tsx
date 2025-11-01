@@ -12,7 +12,7 @@ const Navigation: React.FC = () => {
           <Link href="/" className="text-gray-300 hover:text-white">Home</Link>
           <Link href="/upload" className="text-gray-300 hover:text-white">Upload</Link>
           <Link href="/feed" className="text-gray-300 hover:text-white">Feed</Link>
-          <Link href="/portfolio" className="text-gray-300 hover:text-white">Portfolio</Link>
+          <Link href="/feed" className="text-gray-300 hover:text-white">Portfolio</Link>
           <Link href="/login" className="text-gray-300 hover:text-white">Login</Link>
           <Link href="/register" className="text-gray-300 hover:text-white">Register</Link>
         </div>

@@ -7,6 +7,11 @@ import { useSession, signOut } from 'next-auth/react';
 const SettingsPage: React.FC = () => {
   const { data: session } = useSession();
   const user = session?.user;
+  const userHandle = (user as { username?: string; handle?: string } | undefined)?.username ??
+    (user as { handle?: string } | undefined)?.handle ??
+    user?.name ??
+    null;
+  const portfolioHref = userHandle ? `/${encodeURIComponent(userHandle.toString())}` : '/login';
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -29,7 +34,7 @@ const SettingsPage: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/portfolio"
+              href={portfolioHref}
               className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/10"
             >
               View Portfolio

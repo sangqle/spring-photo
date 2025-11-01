@@ -1,23 +1,14 @@
-import React from 'react';
-import { useRouter } from 'next/router';
-import { usePortfolio } from '@/hooks/usePortfolio';
-import PortfolioHeader from '@/components/portfolio/PortfolioHeader';
-import PortfolioGallery from '@/components/portfolio/PortfolioGallery';
+import { redirect } from 'next/navigation';
 
-const UserPortfolioPage = () => {
-  const router = useRouter();
-  const { userId } = router.query;
-  const { portfolio, isLoading, error } = usePortfolio(userId);
+interface PageProps {
+  params: {
+    userId: string;
+  };
+}
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading portfolio</div>;
-
-  return (
-    <div>
-      <PortfolioHeader userId={userId} />
-      <PortfolioGallery photos={portfolio.photos} />
-    </div>
-  );
+const LegacyPortfolioRoute = ({ params }: PageProps) => {
+  const target = params.userId ? `/${params.userId}` : '/';
+  redirect(target);
 };
 
-export default UserPortfolioPage;
+export default LegacyPortfolioRoute;
