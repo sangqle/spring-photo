@@ -44,7 +44,6 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
   const containerSizeRef = useRef({ width: 0, height: 0 });
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const isZoomed = zoomMode !== 'default';
-  const isPanEnabled = zoomMode === 'original';
 
   const createdAt = photo.createdAt ?? photo.uploadedAt ?? metadata.dateTaken ?? undefined;
   const createdAtDisplay = formatDate(createdAt);
@@ -68,6 +67,53 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
 
     return null;
   }, [imageNaturalSize, metadata.height, metadata.width]);
+
+  const fitImageSize = useMemo(() => {
+    if (!resolvedImageSize) {
+      return null;
+    }
+
+    const { width: containerWidth, height: containerHeight } = containerSize;
+    if (!containerWidth || !containerHeight) {
+      return null;
+    }
+
+    const widthScale = containerWidth / resolvedImageSize.width;
+    const heightScale = containerHeight / resolvedImageSize.height;
+    const scale = Math.min(widthScale, heightScale, 1);
+
+    return {
+      width: resolvedImageSize.width * scale,
+      height: resolvedImageSize.height * scale,
+    };
+  }, [containerSize.height, containerSize.width, resolvedImageSize]);
+
+  const fallbackImageSize = useMemo(() => {
+    if (resolvedImageSize) {
+      return resolvedImageSize;
+    }
+
+    const { width: containerWidth, height: containerHeight } = containerSize;
+    if (containerWidth && containerHeight) {
+      return { width: containerWidth, height: containerHeight };
+    }
+
+    return null;
+  }, [containerSize.height, containerSize.width, resolvedImageSize]);
+
+  const displayImageSize = useMemo(() => {
+    if (zoomMode === 'fit') {
+      return fitImageSize ?? fallbackImageSize;
+    }
+
+    if (zoomMode === 'original') {
+      return resolvedImageSize ?? fallbackImageSize;
+    }
+
+    return fallbackImageSize;
+  }, [fallbackImageSize, fitImageSize, resolvedImageSize, zoomMode]);
+
+  const isPanEnabled = zoomMode === 'original' && Boolean(resolvedImageSize);
 
   useEffect(() => {
     if (!isOpen) {
@@ -192,7 +238,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
 
   const startDragging = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (!isZoomed || event.button !== 0) {
+      if (!isZoomed || !isPanEnabled || event.button !== 0) {
         return;
       }
 
@@ -219,12 +265,12 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
       setIsDragging(true);
       event.preventDefault();
     },
-    [isZoomed, panOffset.x, panOffset.y],
+    [isPanEnabled, isZoomed, panOffset.x, panOffset.y],
   );
 
   const getPanBounds = useCallback(() => {
-    const imageWidth = resolvedImageSize?.width ?? 0;
-    const imageHeight = resolvedImageSize?.height ?? 0;
+    const imageWidth = displayImageSize?.width ?? containerSizeRef.current.width ?? 0;
+    const imageHeight = displayImageSize?.height ?? containerSizeRef.current.height ?? 0;
     const { width: containerWidth, height: containerHeight } = containerSizeRef.current;
 
     const spaceX = containerWidth - imageWidth;
@@ -238,7 +284,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
     const centerY = spaceY / 2;
 
     return { minX, maxX, minY, maxY, centerX, centerY };
-  }, [resolvedImageSize, containerSize.width, containerSize.height]);
+  }, [displayImageSize]);
 
   const handleDragging = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -267,7 +313,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
 
   const handleWheel = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
-      if (!isZoomed) {
+      if (!isZoomed || !isPanEnabled) {
         return;
       }
 
@@ -287,7 +333,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
         return { x: nextX, y: nextY };
       });
     },
-    [getPanBounds, isZoomed],
+    [getPanBounds, isPanEnabled, isZoomed],
   );
 
   const endDragging = useCallback(() => {
@@ -363,13 +409,13 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
       ? `Zoom level 1 • ${zoomHint}`
       : zoomHint;
 
-  const zoomWrapperStyle: CSSProperties = resolvedImageSize
+  const zoomWrapperStyle: CSSProperties = displayImageSize
     ? {
       position: 'absolute',
       top: 0,
       left: 0,
-      width: `${resolvedImageSize.width}px`,
-      height: `${resolvedImageSize.height}px`,
+      width: `${displayImageSize.width}px`,
+      height: `${displayImageSize.height}px`,
       transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
       willChange: 'transform',
     }
@@ -381,9 +427,36 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
       willChange: 'transform',
     };
 
-  const zoomedImageStyle: CSSProperties = resolvedImageSize
-    ? { display: 'block', width: '100%', height: '100%' }
-    : { display: 'block', minWidth: '100%', minHeight: '100%' };
+  const zoomedImageStyle: CSSProperties = displayImageSize
+    ? { display: 'block', width: '100%', height: '100%', borderRadius: 'inherit' }
+    : { display: 'block', minWidth: '100%', minHeight: '100%', borderRadius: 'inherit' };
+
+  const zoomContainerStyle: CSSProperties = isPanEnabled
+    ? { touchAction: 'none', overscrollBehavior: 'none' }
+    : { touchAction: 'pan-y', overscrollBehavior: 'none' };
+
+  const exitButtonStyle: CSSProperties = (() => {
+    if (!isZoomed) {
+      return { top: '16px', right: '16px' };
+    }
+
+    const containerWidth = containerSize.width;
+    const containerHeight = containerSize.height;
+    const imageWidth = displayImageSize?.width ?? 0;
+    const imageHeight = displayImageSize?.height ?? 0;
+
+    if (containerWidth === 0 || containerHeight === 0 || imageWidth === 0 || imageHeight === 0) {
+      return { top: '16px', right: '16px' };
+    }
+
+    const horizontalOffset = Math.max((containerWidth - imageWidth) / 2, 0) + 16;
+    const verticalOffset = Math.max((containerHeight - imageHeight) / 2, 0) + 16;
+
+    return {
+      top: `${verticalOffset}px`,
+      right: `${horizontalOffset}px`,
+    };
+  })();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-6">
@@ -397,11 +470,13 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
         className={`relative z-10 flex h-full w-full flex-col overflow-hidden rounded-3xl bg-card-darker shadow-2xl ${modalContainerClasses}`}
       >
         <div
-          className={`relative flex-1 bg-black ${imageSrc
+          className={`relative flex-1 overflow-hidden rounded-3xl bg-black ${imageSrc
               ? isZoomed
-                ? isDragging
-                  ? 'cursor-grabbing'
-                  : 'cursor-grab'
+                ? zoomMode === 'original'
+                  ? isDragging
+                    ? 'cursor-grabbing'
+                    : 'cursor-grab'
+                  : 'cursor-zoom-in'
                 : 'cursor-zoom-in'
               : ''
             }`}
@@ -411,7 +486,8 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
             <button
               type="button"
               onClick={exitZoom}
-              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-100 transition hover:bg-black/80"
+              className="absolute z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-100 transition hover:bg-black/80"
+              style={exitButtonStyle}
               aria-label="Exit zoom mode"
             >
               <Minimize2 className="h-5 w-5" />
@@ -421,14 +497,14 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
             isZoomed ? (
               <div
                 ref={zoomContainerRef}
-                className="relative h-full w-full select-none overflow-hidden bg-black"
+                className="relative h-full w-full select-none overflow-hidden rounded-3xl bg-black"
                 onPointerDown={startDragging}
                 onPointerMove={handleDragging}
                 onPointerUp={endDragging}
                 onPointerLeave={endDragging}
                 onPointerCancel={endDragging}
                 onWheel={handleWheel}
-                style={{ touchAction: 'none', overscrollBehavior: 'none' }}
+                style={zoomContainerStyle}
               >
                 <div className="absolute top-0 left-0 will-change-transform" style={zoomWrapperStyle}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
