@@ -1,40 +1,17 @@
-'use client';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import UploadClient from './UploadClient';
 
-import React, { useState } from 'react';
-import PhotoUploader from '../../../components/photos/PhotoUploader';
+const CALLBACK_URL = encodeURIComponent('/upload');
 
-const UploadPage = () => {
-  const [uploadStatus, setUploadStatus] = useState('');
+const UploadPage = async () => {
+  const session = await auth();
 
-  const handleUploadComplete = (status: string) => {
-    setUploadStatus(status);
-  };
+  if (!session) {
+    redirect(`/login?callbackUrl=${CALLBACK_URL}`);
+  }
 
-  return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Upload Your Photos</h1>
-          <p className="text-gray-400 text-lg">
-            Share your best work with the community
-          </p>
-        </div>
-        
-        <div className="rounded-lg border border-gray-800 bg-card p-8">
-          <PhotoUploader onUploadComplete={handleUploadComplete} />
-          {uploadStatus && (
-            <div className={`mt-4 p-4 rounded-lg ${
-              uploadStatus.includes('success') 
-                ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                : 'bg-red-500/10 text-red-400 border border-red-500/20'
-            }`}>
-              {uploadStatus}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  return <UploadClient />;
 };
 
 export default UploadPage;
