@@ -418,6 +418,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
       height: `${displayImageSize.height}px`,
       transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
       willChange: 'transform',
+      borderRadius: 'inherit',
     }
     : {
       position: 'absolute',
@@ -425,6 +426,7 @@ const PhotoCardDetail: React.FC<PhotoCardDetailProps> = ({ photo, isOpen, onClos
       left: 0,
       transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
       willChange: 'transform',
+      borderRadius: 'inherit',
     };
 
   const zoomedImageStyle: CSSProperties = displayImageSize
