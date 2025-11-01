@@ -2,6 +2,8 @@ export interface Photo {
   id: string;
   userId?: string;
   username?: string;
+  displayName?: string;
+  avatarUrl?: string;
   title?: string;
   description?: string;
   fileName?: string;

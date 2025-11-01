@@ -1,5 +1,6 @@
 import Image from 'next/image';
-import React, { type CSSProperties } from 'react';
+import Link from 'next/link';
+import React, { type CSSProperties, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Photo } from '../../types/photo';
 
@@ -8,10 +9,14 @@ interface FeedItemProps {
 }
 
 const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  
   const rawCreatedAt = photo.createdAt ?? photo.uploadedAt;
   const createdAtCandidate = rawCreatedAt ? new Date(rawCreatedAt) : new Date();
   const createdAt = Number.isNaN(createdAtCandidate.getTime()) ? new Date() : createdAtCandidate;
-  const photographerName = photo.username ?? photo.userId ?? 'Unknown photographer';
+  const photographerName = photo.displayName ?? photo.username ?? photo.userId ?? 'Unknown photographer';
+  const username = photo.username ?? photo.userId ?? 'unknown';
+  const avatarUrl = photo.avatarUrl;
 
   const imageSrc = photo.url?.trim();
   const hasImage = Boolean(imageSrc);
@@ -30,20 +35,58 @@ const FeedItem: React.FC<FeedItemProps> = ({ photo }) => {
   return (
     <article className="w-full overflow-hidden rounded-3xl border border-gray-800 bg-card shadow-xl shadow-black/20">
       <header className="flex items-start justify-between gap-4 px-6 pt-6">
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">{photographerName}</span>
-          <time className="text-xs text-gray-500" dateTime={createdAt.toISOString()}>
-            {formatDistanceToNow(createdAt, { addSuffix: true })}
-          </time>
+        <div className="flex items-center gap-3">
+          {avatarUrl ? (
+            <Link href={`/${username}`} className="shrink-0">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-gray-700 transition-all hover:ring-gray-500">
+                <Image
+                  src={avatarUrl}
+                  alt={photographerName}
+                  fill
+                  className="object-cover"
+                  sizes="40px"
+                />
+              </div>
+            </Link>
+          ) : (
+            <Link href={`/${username}`} className="shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 ring-2 ring-gray-700 transition-all hover:ring-gray-500">
+                <span className="text-sm font-semibold text-white">
+                  {photographerName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </Link>
+          )}
+          <div className="flex flex-col">
+            <Link 
+              href={`/${username}`}
+              className="text-sm font-semibold text-white hover:text-gray-300 transition-colors"
+            >
+              {photographerName}
+            </Link>
+            <time className="text-xs text-gray-500" dateTime={createdAt.toISOString()}>
+              {formatDistanceToNow(createdAt, { addSuffix: true })}
+            </time>
+          </div>
         </div>
       </header>
 
       <div className="space-y-3 px-6 pt-4">
         <h3 className="text-xl font-semibold tracking-tight text-white">{displayTitle}</h3>
         {displayDescription ? (
-          <p className="text-base leading-relaxed text-gray-200">
-            {displayDescription}
-          </p>
+          <div className="text-base leading-relaxed text-gray-200">
+            <p className={showFullDescription ? '' : 'line-clamp-4'}>
+              {displayDescription}
+            </p>
+            {displayDescription.length > 200 && (
+              <button
+                onClick={() => setShowFullDescription(!showFullDescription)}
+                className="mt-1 text-sm text-gray-400 hover:text-gray-300 transition-colors"
+              >
+                {showFullDescription ? 'Show less' : 'Show more'}
+              </button>
+            )}
+          </div>
         ) : null}
       </div>
 
