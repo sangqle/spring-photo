@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import usePhotoLike from '../../hooks/usePhotoLike';
 
 interface FeedItemActionsProps {
   photoId: string;
@@ -19,50 +20,11 @@ const FeedItemActions: React.FC<FeedItemActionsProps> = ({
   showComments = false,
   onToggleComments,
 }) => {
-  const hasInitialLikeCount = typeof initialLikeCount === 'number' && !Number.isNaN(initialLikeCount);
-  const [isLiked, setIsLiked] = useState(initialIsLiked);
-  const [likeCount, setLikeCount] = useState<number | null>(hasInitialLikeCount ? initialLikeCount : null);
-
-  const handleLike = async () => {
-    // Optimistic update keeps UI snappy while awaiting backend response.
-    const nextLiked = !isLiked;
-    setIsLiked(nextLiked);
-    setLikeCount((current) => {
-      if (nextLiked) {
-        return current === null ? 1 : current + 1;
-      }
-
-      if (current === null) {
-        return null;
-      }
-
-      const nextCount = Math.max(current - 1, 0);
-      if (!hasInitialLikeCount && nextCount === 0) {
-        return null;
-      }
-      return nextCount;
-    });
-
-    // TODO: Wire up to API once like endpoint is available.
-    // try {
-    //   await fetch(`/api/photos/${photoId}/like`, {
-    //     method: nextLiked ? 'POST' : 'DELETE',
-    //   });
-    // } catch (error) {
-    //   // Revert to previous state if the request fails.
-    //   setIsLiked(isLiked);
-    //   setLikeCount((current) => {
-    //     if (nextLiked) {
-    //       return current === null ? 1 : current + 1;
-    //     }
-    //     if (current === null) {
-    //       return null;
-    //     }
-    //     const nextCount = Math.max(current - 1, 0);
-    //     return !hasInitialLikeCount && nextCount === 0 ? null : nextCount;
-    //   });
-    // }
-  };
+  const { isLiked, likeCount, toggleLike } = usePhotoLike({
+    photoId,
+    initialIsLiked,
+    initialLikeCount,
+  });
 
   const handleToggleComments = () => {
     if (onToggleComments) {
@@ -74,7 +36,7 @@ const FeedItemActions: React.FC<FeedItemActionsProps> = ({
     <div className="border-b border-gray-800 px-6 py-3">
       <div className="flex items-center gap-4">
         <button
-          onClick={handleLike}
+          onClick={toggleLike}
           className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-gray-800"
           aria-label={isLiked ? 'Unlike' : 'Like'}
           data-photo-id={photoId}
