@@ -28,6 +28,10 @@ interface LoginSuccessResponse {
   username: string;
   email: string;
   role: string;
+  image?: string | null;
+  avatarUrl?: string | null;
+  profilePicture?: string | null;
+  profileImageUrl?: string | null;
 }
 
 export async function signUp(email: string, password: string): Promise<void> {
@@ -120,6 +124,12 @@ export const authOptions: NextAuthConfig = {
 
           const data = (await response.json()) as LoginSuccessResponse;
           const userId = String(data.id ?? data.username);
+          const image =
+            data.image ??
+            data.avatarUrl ??
+            data.profilePicture ??
+            data.profileImageUrl ??
+            null;
 
           return {
             id: userId,
@@ -127,6 +137,7 @@ export const authOptions: NextAuthConfig = {
             name: data.username,
             accessToken: data.token,
             role: data.role,
+            image,
           };
         } catch (error) {
           if (error instanceof CredentialsSignin) {
@@ -155,6 +166,10 @@ export const authOptions: NextAuthConfig = {
         const { accessToken, role } = user as { accessToken?: string; role?: string };
         extendedToken.accessToken = accessToken;
         extendedToken.role = role;
+        const possibleImage = (user as { image?: string | null }).image;
+        if (possibleImage) {
+          extendedToken.picture = possibleImage;
+        }
       }
       return extendedToken;
     },
@@ -164,6 +179,7 @@ export const authOptions: NextAuthConfig = {
         sessionUser.id = token.sub ?? sessionUser.id;
         sessionUser.accessToken = (token as ExtendedJWT).accessToken;
         sessionUser.role = (token as ExtendedJWT).role;
+        sessionUser.image = token.picture ?? sessionUser.image;
       }
       return session;
     },
